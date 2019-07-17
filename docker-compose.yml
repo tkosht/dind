@@ -1,0 +1,15 @@
+version: '3'
+
+services:
+  user1:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    #image: teracy/ubuntu:16.04-dind-latest
+    image: ubuntu:user1
+    container_name: user1
+    privileged: true
+    tty: true
+    volumes:
+      - $PWD/user1:/home/user
+    working_dir: /home/user
