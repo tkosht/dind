@@ -1,1 +1,1 @@
-docker-compose exec user1 bash
+docker-compose exec user1 su - user # bash
