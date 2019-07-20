@@ -1,17 +1,45 @@
-version: '3'
+version: '3.7'
 
 services:
-  user1:
+  container1:
     build:
       context: .
       dockerfile: Dockerfile
-    # image: teracy/ubuntu:16.04-dind-latest
-    # image: billyteves/ubuntu-dind:16.04
-    #image: gitlab/dind:latest
-    image: ubuntu:user1
-    container_name: user1
+      args:
+        - PORT=2375
+    image: ubuntu:container
+    container_name: container1
     privileged: true
     tty: true
     volumes:
-      - $PWD/user1:/home/user
+      - $PWD/container1:/home/user
     working_dir: /home/user
+    ports:
+      - 7175:2375   # port of docker
+    networks:
+      net:
+        ipv4_address: 192.168.200.11
+
+  container2:
+    image: ubuntu:container
+    container_name: container2
+    privileged: true
+    tty: true
+    volumes:
+      - $PWD/container2:/home/user
+    working_dir: /home/user
+    ports:
+      - 7275:2375   # port of docker
+    networks:
+      net:
+        ipv4_address: 192.168.200.12
+    depends_on:
+      - container1
+
+networks:
+  net:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+      - subnet: 192.168.200.0/24
