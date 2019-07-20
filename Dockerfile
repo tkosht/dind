@@ -5,24 +5,32 @@ MAINTAINER tkosht <takehito.oshita.business@gmail.com>
 ARG PORT
 
 # for interactive environment
-ENV TZ Asia/Tokyo
-ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update -y && apt-get upgrade -y && \
-    apt-get install -y git sysstat vim tmux tzdata \
-        openssh-server curl
-### RUN echo $TZ > /etc/timezone && dpkg-reconfigure --frontend noninteractive tzdata
+    apt-get install -y git sysstat vim tmux curl \
+        openssh-server sudo
+
 RUN mkdir /var/run/sshd
 RUN echo "exit 0" > /usr/sbin/policy-rc.d 
 
 # # c.f https://hub.docker.com/r/billyteves/ubuntu-dind/dockerfile
-# Install Docker from Docker Inc. repositories.
+# Install Docker and wrapdocker
 RUN curl -sSL https://get.docker.com/ | sh
-
-# Install the magic wrapper.
 RUN curl -sSL https://raw.githubusercontent.com/billyteves/ubuntu-dind/master/wrapdocker -o /usr/local/bin/wrapdocker
 RUN chmod +x /usr/local/bin/wrapdocker
 VOLUME /var/lib/docker
 ENTRYPOINT ["wrapdocker"]
+
+RUN apt-get install -y locales \
+    && localedef -f UTF-8 -i ja_JP ja_JP.UTF-8
+ENV LANG="ja_JP.UTF-8" \
+    LANGUAGE="ja_JP:ja" \
+    LC_ALL="ja_JP.UTF-8"
+
+ENV TZ Asia/Tokyo
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get install -y tzdata
+# RUN echo $TZ > /etc/timezone && dpkg-reconfigure --frontend noninteractive tzdata
+RUN ln -sf /usr/share/zoneinfo/Asia/Tokyo /etc/localtime
 
 # install python3
 RUN apt-get install -y --no-install-recommends \
@@ -44,6 +52,7 @@ RUN useradd -m user --shell /bin/bash -G docker,sudo
 ARG home_dir=/home/user
 RUN echo 'user:user' |chpasswd
 RUN echo "user ALL=(ALL) ALL" >> /etc/sudoers
+RUN echo "Defaults visiblepw" >> /etc/sudoers
 
 # expose ports
 ENV PORT $PORT

@@ -7,8 +7,10 @@ n=0
 container_list=$(sh bin/get_containers.sh)
 for container in $container_list
 do
+    cd $wkdir
     n=$(echo $n + 1 | bc)
     mkdir -p $wkdir/$container
+    cp rc/.* $container
     cd $wkdir/$container
     cat << __direnv__ > .envrc
 cd ../ && docker-compose exec $container su - user -c bash
